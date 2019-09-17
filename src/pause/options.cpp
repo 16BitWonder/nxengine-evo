@@ -1,16 +1,16 @@
 #include "options.h"
 
-#include "../nx.h"
-#include "dialog.h"
-#include "message.h"
 #include "../ResourceManager.h"
 #include "../common/misc.h"
 #include "../game.h"
 #include "../graphics/Renderer.h"
 #include "../input.h"
 #include "../map.h"
+#include "../nx.h"
 #include "../settings.h"
 #include "../sound/SoundManager.h"
+#include "dialog.h"
+#include "message.h"
 using namespace Options;
 using namespace NXE::Graphics;
 
@@ -30,6 +30,8 @@ void _fullscreen_get(ODItem *item);
 void _fullscreen_change(ODItem *item, int dir);
 void _facepics_get(ODItem *item);
 void _facepics_change(ODItem *item, int dir);
+void _framerate_get(ODItem *item);
+void _framerate_change(ODItem *item, int dir);
 
 void _lang_get(ODItem *item);
 void _lang_change(ODItem *item, int dir);
@@ -155,7 +157,7 @@ void DialogDismissed()
   }
   else if (opt.InBindingMenu)
   {
-    EnterControlsMenu(NULL,0);
+    EnterControlsMenu(NULL, 0);
   }
   else
   {
@@ -218,7 +220,7 @@ static void EnterControlsMenu(ODItem *item, int dir)
 
 static void EnterRebindMenu(ODItem *item, int dir)
 {
-  Dialog *dlg = opt.dlg;
+  Dialog *dlg       = opt.dlg;
   opt.InBindingMenu = true;
   dlg->Clear();
   NXE::Sound::SoundManager::getInstance()->playSfx(NXE::Sound::SFX::SND_MENU_MOVE);
@@ -249,6 +251,7 @@ static void EnterGraphicsMenu(ODItem *item, int dir)
   dlg->AddItem("Resolution: ", _res_change, _res_get, -1, OD_CHOICE);
   dlg->AddItem("Fullscreen: ", _fullscreen_change, _fullscreen_get, -1, OD_CHOICE);
   dlg->AddItem("Animated facepics: ", _facepics_change, _facepics_get, -1, OD_CHOICE);
+  dlg->AddItem("Framerate: ", _framerate_change, _framerate_get, -1, OD_CHOICE);
   dlg->AddSeparator();
   dlg->AddDismissalItem();
 }
@@ -268,7 +271,6 @@ static void EnterSoundMenu(ODItem *item, int dir)
   dlg->AddSeparator();
   dlg->AddDismissalItem();
 }
-
 
 void _res_get(ODItem *item)
 {
@@ -351,7 +353,7 @@ void _lang_change(ODItem *item, int dir)
   memset(settings->language, 0, 256);
   strncpy(settings->language, langs[i].c_str(), 255);
   game.lang->load();
-//  font_reload();
+  //  font_reload();
   game.tsc->Init();
   Renderer::getInstance()->flushAll();
 }
@@ -378,6 +380,18 @@ void _facepics_get(ODItem *item)
 void _facepics_change(ODItem *item, int dir)
 {
   settings->animated_facepics ^= 1;
+  NXE::Sound::SoundManager::getInstance()->playSfx(NXE::Sound::SFX::SND_MENU_SELECT);
+}
+
+void _framerate_get(ODItem *item)
+{
+  static const char *strs[] = {"50", "60"};
+  strcpy(item->suffix, strs[settings->framerate]);
+}
+
+void _framerate_change(ODItem *item, int dir)
+{
+  settings->framerate ^= 1;
   NXE::Sound::SoundManager::getInstance()->playSfx(NXE::Sound::SFX::SND_MENU_SELECT);
 }
 
@@ -425,10 +439,10 @@ void _music_get(ODItem *item)
 void _tracks_change(ODItem *item, int dir)
 {
   std::vector<std::string> names = NXE::Sound::SoundManager::getInstance()->music_dir_names();
-  int result = settings->new_music + dir;
+  int result                     = settings->new_music + dir;
 
   if (result < 0)
-    result = names.size()-1;
+    result = names.size() - 1;
   if (result >= (int)names.size())
     result = 0;
   NXE::Sound::SoundManager::getInstance()->setNewmusic(result);
@@ -443,7 +457,7 @@ void _tracks_get(ODItem *item)
 
 void _sfx_volume_change(ODItem *item, int dir)
 {
-  settings->sfx_volume += 5*dir;
+  settings->sfx_volume += 5 * dir;
 
   if (settings->sfx_volume <= 0)
     settings->sfx_volume = 0;
@@ -462,7 +476,7 @@ void _sfx_volume_get(ODItem *item)
 
 void _music_volume_change(ODItem *item, int dir)
 {
-  settings->music_volume += 5*dir;
+  settings->music_volume += 5 * dir;
 
   if (settings->music_volume <= 0)
     settings->music_volume = 0;
@@ -496,7 +510,6 @@ void _rumble_get(ODItem *item)
   strcpy(item->suffix, strs[settings->rumble]);
 }
 
-
 void _scheme_change(ODItem *item, int dir)
 {
   settings->control_scheme ^= 1;
@@ -504,12 +517,12 @@ void _scheme_change(ODItem *item, int dir)
   opt.dlg->Refresh();
   if (settings->control_scheme)
   {
-    ACCEPT_BUTTON = FIREKEY;
+    ACCEPT_BUTTON  = FIREKEY;
     DECLINE_BUTTON = JUMPKEY;
   }
   else
   {
-    ACCEPT_BUTTON = JUMPKEY;
+    ACCEPT_BUTTON  = JUMPKEY;
     DECLINE_BUTTON = FIREKEY;
   }
 }
