@@ -3,6 +3,7 @@
 
 #include "graphics/Renderer.h"
 #include "nx.h"
+#include "settings.h"
 using namespace NXE::Graphics;
 #include "autogen/sprites.h"
 #include "screeneffect.h"
@@ -389,9 +390,22 @@ void niku_draw(int value, bool force_white)
 
   Renderer::getInstance()->sprites.drawSprite(NIKU_X, NIKU_Y, SPR_NIKU_CLOCK, clkframe);
 
-  int mins = (value / 3000); // the game runs at 50 fps
-  int secs = (value / 50) % 60;
-  int tens = (value / 5) % 10;
+  int mins = 0;
+  int secs = 0;
+  int tens = 0;
+
+  if (settings->framerate)
+  {
+    mins = (value / 3600); /* the game runs at 60 fps */
+    secs = (value / 60) % 60;
+    tens = (value / 6) % 10;
+  }
+  else
+  {
+    mins = (value / 3000); /* the game runs at 50 fps */
+    secs = (value / 50) % 60;
+    tens = (value / 5) % 10;
+  }
 
   DrawNumber(NIKU_X, NIKU_Y, mins);
   DrawTwoDigitNumber(NIKU_X + 36, NIKU_Y, secs);

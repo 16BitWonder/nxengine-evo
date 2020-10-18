@@ -11,6 +11,7 @@ struct Settings
   int last_save_slot;
   bool show_fps;
   bool fullscreen;
+  bool framerate;
 
   bool sound_enabled;
   int music_enabled;
